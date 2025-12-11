@@ -1,0 +1,19 @@
+﻿# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+env/
+
+# Data files
+*.csv
+*.xlsx
+data/large_files/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
