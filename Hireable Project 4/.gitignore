@@ -1,0 +1,48 @@
+# Large Data Files (>100MB)
+data/amazon_reviews.csv
+data/amazon_reviews.csv.gz
+
+# Large Model Files (>100MB)
+models/collab_filter.pkl
+models/sentiment_bert/model.safetensors
+models/sentiment_bert_checkpoint.pkl
+
+# Keep small model config files
+!models/sentiment_bert/config.json
+!models/sentiment_bert/special_tokens_map.json
+!models/sentiment_bert/tokenizer_config.json
+!models/sentiment_bert/vocab.txt
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Results - keep small files
+results/*.pkl
+
+# Logs
+*.log
+logs/
