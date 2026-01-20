@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Sentiment Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .rating-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .stars {
+            font-size: 48px;
+            letter-spacing: 5px;
+        }
+
+        .rating-number {
+            font-size: 72px;
+            font-weight: 700;
+            margin: 0 20px;
+        }
+
+        .confidence {
+            text-align: center;
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .confidence-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease-out;
+        }
+
+        .review-text {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-style: italic;
+            color: #555;
+            font-size: 14px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        /* Rating colors */
+        .rating-1, .rating-2 {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .rating-1 .rating-number, .rating-2 .rating-number {
+            color: white;
+        }
+
+        .rating-3 {
+            background: linear-gradient(135deg, #ffd93d 0%, #f6c23e 100%);
+            color: #333;
+        }
+
+        .rating-4, .rating-5 {
+            background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+            color: white;
+        }
+
+        .rating-4 .rating-number, .rating-5 .rating-number {
+            color: white;
+        }
+
+        .error {
+            background: #ffe0e0;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 16px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ Sentiment Analyzer</h1>
+        <p class="subtitle">Powered by DistilBERT • Trained on Amazon Reviews</p>
+
+        <div class="input-section">
+            <label for="reviewText">Enter a Product Review:</label>
+            <textarea 
+                id="reviewText" 
+                placeholder="Type or paste your product review here... For example: 'This product exceeded my expectations! The quality is outstanding and delivery was fast.'"
+            ></textarea>
+        </div>
+
+        <button id="analyzeBtn" onclick="analyzeSentiment()">
+            🔍 Analyze Sentiment
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing sentiment...</p>
+        </div>
+
+        <div class="error" id="error">
+            <strong>Error:</strong> <span id="errorMessage"></span>
+        </div>
+
+        <div class="results" id="results">
+            <div class="result-header">Sentiment Analysis Results</div>
+            
+            <div class="rating-display">
+                <span class="stars" id="stars"></span>
+                <span class="rating-number" id="ratingNumber"></span>
+            </div>
+
+            <div class="confidence">
+                Confidence: <strong id="confidencePercent"></strong>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+            </div>
+
+            <div class="review-text" id="analyzedReview"></div>
+        </div>
+
+        <div class="footer">
+            E-Commerce Recommendation System • AI Bootcamp Project 4
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/sentiment';
+
+        function getStars(rating) {
+            return '⭐'.repeat(rating);
+        }
+
+        function getRatingClass(rating) {
+            return `rating-${rating}`;
+        }
+
+        async function analyzeSentiment() {
+            const reviewText = document.getElementById('reviewText').value.trim();
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+
+            // Hide previous results/errors
+            results.classList.remove('show');
+            error.classList.remove('show');
+
+            // Validation
+            if (!reviewText) {
+                showError('Please enter a review text to analyze.');
+                return;
+            }
+
+            if (reviewText.length < 10) {
+                showError('Review text is too short. Please enter at least 10 characters.');
+                return;
+            }
+
+            // Show loading
+            analyzeBtn.disabled = true;
+            loading.classList.add('show');
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        review_text: reviewText
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                // Display results
+                displayResults(data);
+
+            } catch (err) {
+                showError(`Failed to connect to API: ${err.message}. Make sure the FastAPI server is running on http://localhost:8000`);
+            } finally {
+                loading.classList.remove('show');
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            const stars = document.getElementById('stars');
+            const ratingNumber = document.getElementById('ratingNumber');
+            const confidencePercent = document.getElementById('confidencePercent');
+            const confidenceFill = document.getElementById('confidenceFill');
+            const analyzedReview = document.getElementById('analyzedReview');
+
+            // Remove previous rating classes
+            results.className = 'results show';
+            
+            // Add new rating class
+            results.classList.add(getRatingClass(data.predicted_rating));
+
+            // Set content
+            stars.textContent = getStars(data.predicted_rating);
+            ratingNumber.textContent = data.predicted_rating;
+            confidencePercent.textContent = `${(data.confidence * 100).toFixed(2)}%`;
+            confidenceFill.style.width = `${data.confidence * 100}%`;
+            analyzedReview.textContent = `"${data.review_text}"`;
+        }
+
+        function showError(message) {
+            const error = document.getElementById('error');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            errorMessage.textContent = message;
+            error.classList.add('show');
+        }
+
+        // Allow Enter key to submit (Ctrl+Enter for new line)
+        document.getElementById('reviewText').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) {
+                e.preventDefault();
+                analyzeSentiment();
+            }
+        });
+
+        // Add some example reviews
+        const examples = [
+            "This product is absolutely amazing! Best purchase ever!",
+            "Terrible quality. Broke after one day. Complete waste of money.",
+            "It's okay, nothing special. Does what it's supposed to do.",
+            "Good value for money. Would recommend to others.",
+            "Worst product I've ever bought. Save your money!"
+        ];
+
+        // Optional: Add example button functionality
+        function loadExample() {
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            document.getElementById('reviewText').value = randomExample;
+        }
+    </script>
+</body>
+</html>
