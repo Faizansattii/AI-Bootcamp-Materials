@@ -3,7 +3,7 @@
 Complete course materials for AI Bootcamp training program.
 
 ## Course Structure
-
+- **Week 1**: Maths Fundamentals
 - **Week 2-5**: Python Fundamentals & Data Science
 - **Week 6-10**: Machine Learning Basics
 - **Week 11-15**: Deep Learning
